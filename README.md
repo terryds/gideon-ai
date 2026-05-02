@@ -2,7 +2,9 @@
 
 A self-hosted personal AI assistant dashboard. Talk to **your own Claude Code** through Telegram, and let it monitor the things you care about — crypto/forex prices, Reddit, Twitter, web search, people on the internet — and ping you when something happens.
 
-Everything runs on your own machine (laptop, VPS, home server). No accounts, no SaaS. SQLite for storage, Bun + React for the app.
+Everything runs on your own machine. SQLite for storage, Bun + React for the app. No accounts, no SaaS.
+
+> **Designed for single-user use on a VPS.** One bot, one linked Telegram chat, one operator. No multi-user auth, no tenant isolation, no permission model — the linked chat effectively has shell access (see [Security notes](#security-notes)). If you need multi-user support, look at [OpenClaw](https://openclaw.ai/) instead.
 
 ```
                     ┌────────────────────┐
@@ -225,6 +227,7 @@ Configure both in **Settings → Information Signal API keys**.
 
 ## Security notes
 
+- **Single-user only.** There is no user model — the linked Telegram chat is the operator. Don't deploy this for a team or share the bot.
 - The Telegram → Claude Code relay runs `claude --permission-mode bypassPermissions`. **Treat your linked Telegram chat as having root on the host.** Don't share the chat. Use a private bot.
 - API keys (Anthropic, Brave, Exa, Twitter cookies, proxy creds) are stored **plaintext** in `data/dashboard.db`. Don't commit `data/` and don't back it up to anywhere untrusted.
 - There is **no built-in authentication** on the dashboard HTTP server. Bind it to localhost, or put it behind a reverse proxy with auth (Tailscale/Cloudflare Access/HTTP basic auth/etc.).
