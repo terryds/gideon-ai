@@ -16,6 +16,21 @@ Everything runs on your own machine (laptop, VPS, home server). No accounts, no 
                     └────────────────────┘
 ```
 
+## How does this compare to OpenClaw?
+
+Think of Gideon as a **lightweight, opinionated alternative to [OpenClaw](https://openclaw.ai/)**.
+
+|  | Gideon AI Dashboard | [OpenClaw](https://openclaw.ai/) |
+|---|---|---|
+| Channels | Telegram only | Telegram, WhatsApp, Discord, Slack, Signal, iMessage, Teams, Matrix, … |
+| Stack | Bun + React + SQLite, single repo, `bun run dev` | Docker gateway, multiple services |
+| Built-in monitoring | Finance / Reddit / Twitter / Exa / web-search signals all in one dashboard | None — pure agent gateway |
+| Setup | Two-step in-browser wizard | More configuration |
+| Scope | Personal dashboard with a Claude relay attached | General-purpose, multi-channel agent gateway |
+
+**Pick OpenClaw** if you want to talk to Claude from many platforms and don't need a monitoring UI.
+**Pick Gideon** if you live in Telegram, want everything in one small Bun process, and want monitoring features bundled in.
+
 ## Table of contents
 
 - [Quick start](#quick-start)
