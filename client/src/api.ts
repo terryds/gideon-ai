@@ -76,11 +76,9 @@ export type SettingsResponse = {
   exa_api_key_is_custom: boolean;
   exa_num_results: number;
   exa_num_results_is_custom: boolean;
-  brave_search_api_key: string;
-  brave_search_api_key_is_custom: boolean;
-  anthropic_api_key: string;
-  anthropic_api_key_is_custom: boolean;
-  info_signal_model: string;
+  perplexity_api_key: string;
+  perplexity_api_key_is_custom: boolean;
+  info_signal_perplexity_preset: string;
 };
 
 export type RedditKeyword = {
@@ -186,7 +184,7 @@ export type InfoSignal = {
   created_at: number;
 };
 
-export type BraveResult = {
+export type InfoSignalSearchResult = {
   title: string;
   url: string;
   description: string;
@@ -201,7 +199,7 @@ export type InfoSignalRun = {
   duration_ms: number;
   status: 'ok' | 'error';
   error: string | null;
-  search_results: BraveResult[] | null;
+  search_results: InfoSignalSearchResult[] | null;
   model_decision: number | null;
   model_reason: string | null;
   model_summary: string | null;
@@ -297,8 +295,7 @@ export const api = {
       twitter_result_limit?: number | null;
       exa_api_key?: string;
       exa_num_results?: number | null;
-      brave_search_api_key?: string;
-      anthropic_api_key?: string;
+      perplexity_api_key?: string;
     }) => request<SettingsResponse>('/settings', { method: 'PUT', body: JSON.stringify(body) }),
     testTelegram: () => request<{ ok: boolean; error?: string }>('/settings/test-telegram', { method: 'POST' }),
     botInfo: () => request<Ok<{ bot: BotInfo }> | Err>('/settings/telegram/bot-info'),

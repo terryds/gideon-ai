@@ -114,9 +114,8 @@ export const DEFAULT_REDDIT_RESULT_LIMIT = 10;
 export const DEFAULT_TWITTER_RESULT_LIMIT = 20;
 export const DEFAULT_EXA_API_KEY = '';
 export const DEFAULT_EXA_NUM_RESULTS = 10;
-export const DEFAULT_BRAVE_SEARCH_API_KEY = '';
-export const DEFAULT_ANTHROPIC_API_KEY = '';
-export const DEFAULT_INFO_SIGNAL_MODEL = 'claude-haiku-4-5-20251001';
+export const DEFAULT_PERPLEXITY_API_KEY = '';
+export const INFO_SIGNAL_PERPLEXITY_PRESET = 'pro-search';
 
 export const FREQUENCY_SECONDS: Record<InfoSignalFrequency, number> = {
   '30m': 30 * 60,

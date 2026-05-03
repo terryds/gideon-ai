@@ -8,9 +8,8 @@ import {
   DEFAULT_TWITTER_RESULT_LIMIT,
   DEFAULT_EXA_API_KEY,
   DEFAULT_EXA_NUM_RESULTS,
-  DEFAULT_BRAVE_SEARCH_API_KEY,
-  DEFAULT_ANTHROPIC_API_KEY,
-  DEFAULT_INFO_SIGNAL_MODEL,
+  DEFAULT_PERPLEXITY_API_KEY,
+  INFO_SIGNAL_PERPLEXITY_PRESET,
   type Signal,
   type RunRow,
   type RedditKeyword,
@@ -101,11 +100,9 @@ function settingsResponse() {
       return n !== null && Number.isFinite(n) ? n : DEFAULT_EXA_NUM_RESULTS;
     })(),
     exa_num_results_is_custom: getSetting('exa_num_results') !== null,
-    brave_search_api_key: getSetting('brave_search_api_key') ?? DEFAULT_BRAVE_SEARCH_API_KEY,
-    brave_search_api_key_is_custom: getSetting('brave_search_api_key') !== null,
-    anthropic_api_key: getSetting('anthropic_api_key') ?? DEFAULT_ANTHROPIC_API_KEY,
-    anthropic_api_key_is_custom: getSetting('anthropic_api_key') !== null,
-    info_signal_model: DEFAULT_INFO_SIGNAL_MODEL,
+    perplexity_api_key: getSetting('perplexity_api_key') ?? DEFAULT_PERPLEXITY_API_KEY,
+    perplexity_api_key_is_custom: getSetting('perplexity_api_key') !== null,
+    info_signal_perplexity_preset: INFO_SIGNAL_PERPLEXITY_PRESET,
   };
 }
 
@@ -376,20 +373,12 @@ const server = Bun.serve({
           }
           setSetting('exa_num_results', String(n));
         }
-        if (typeof body.brave_search_api_key === 'string') {
-          const v = body.brave_search_api_key.trim();
+        if (typeof body.perplexity_api_key === 'string') {
+          const v = body.perplexity_api_key.trim();
           if (v.length === 0) {
-            db.prepare("DELETE FROM settings WHERE key = 'brave_search_api_key'").run();
+            db.prepare("DELETE FROM settings WHERE key = 'perplexity_api_key'").run();
           } else {
-            setSetting('brave_search_api_key', v);
-          }
-        }
-        if (typeof body.anthropic_api_key === 'string') {
-          const v = body.anthropic_api_key.trim();
-          if (v.length === 0) {
-            db.prepare("DELETE FROM settings WHERE key = 'anthropic_api_key'").run();
-          } else {
-            setSetting('anthropic_api_key', v);
+            setSetting('perplexity_api_key', v);
           }
         }
         if (typeof body.poll_cron === 'string') {

@@ -5,16 +5,14 @@ import { Button } from './Button.tsx';
 
 export function InfoSignalApiKeysCard() {
   const [settings, setSettings] = useState<SettingsResponse | null>(null);
-  const [braveInput, setBraveInput] = useState('');
-  const [anthropicInput, setAnthropicInput] = useState('');
+  const [perplexityInput, setPerplexityInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   function applySettings(s: SettingsResponse) {
     setSettings(s);
-    setBraveInput(s.brave_search_api_key);
-    setAnthropicInput(s.anthropic_api_key);
+    setPerplexityInput(s.perplexity_api_key);
   }
 
   useEffect(() => {
@@ -32,8 +30,7 @@ export function InfoSignalApiKeysCard() {
     setSaving(true); setMsg(null); setError(null);
     try {
       const s = await api.settings.update({
-        brave_search_api_key: braveInput.trim(),
-        anthropic_api_key: anthropicInput.trim(),
+        perplexity_api_key: perplexityInput.trim(),
       });
       applySettings(s);
       setMsg('Saved.');
@@ -45,12 +42,12 @@ export function InfoSignalApiKeysCard() {
   }
 
   async function handleReset() {
-    if (!confirm('Reset Brave and Anthropic keys to defaults?')) return;
+    if (!confirm('Clear the Perplexity API key?')) return;
     setSaving(true); setMsg(null); setError(null);
     try {
-      const s = await api.settings.update({ brave_search_api_key: '', anthropic_api_key: '' });
+      const s = await api.settings.update({ perplexity_api_key: '' });
       applySettings(s);
-      setMsg('Reset to defaults.');
+      setMsg('Cleared.');
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -59,19 +56,15 @@ export function InfoSignalApiKeysCard() {
   }
 
   const isDirty =
-    !!settings &&
-    (braveInput.trim() !== settings.brave_search_api_key ||
-      anthropicInput.trim() !== settings.anthropic_api_key);
+    !!settings && perplexityInput.trim() !== settings.perplexity_api_key;
 
-  const hasOverride =
-    !!settings &&
-    (settings.brave_search_api_key_is_custom || settings.anthropic_api_key_is_custom);
+  const hasOverride = !!settings && settings.perplexity_api_key_is_custom;
 
   return (
     <Card>
       <CardHeader
-        title="Information Signal API keys"
-        description="Used by the scheduler when it searches the web and asks Claude whether to notify you."
+        title="Information Signal API key"
+        description="Used by the scheduler to ask Perplexity to search the web and decide whether to notify you."
       />
       <CardBody>
         {error && (
@@ -86,51 +79,30 @@ export function InfoSignalApiKeysCard() {
         )}
         <form onSubmit={handleSave} className="space-y-3">
           <div>
-            <label htmlFor="brave-key" className="block text-xs font-medium text-slate-700">
-              BRAVE_SEARCH_API_KEY{' '}
-              {settings?.brave_search_api_key_is_custom ? (
-                <span className="ml-1 text-indigo-700">(custom)</span>
+            <label htmlFor="perplexity-key" className="block text-xs font-medium text-slate-700">
+              PERPLEXITY_API_KEY{' '}
+              {settings?.perplexity_api_key_is_custom ? (
+                <span className="ml-1 text-indigo-700">(set)</span>
               ) : (
-                <span className="ml-1 text-slate-500">(default)</span>
+                <span className="ml-1 text-slate-500">(not set)</span>
               )}
             </label>
             <input
-              id="brave-key"
+              id="perplexity-key"
               type="text"
               autoComplete="off"
               spellCheck={false}
-              value={braveInput}
-              onChange={(e) => setBraveInput(e.target.value)}
-              placeholder="paste your Brave Search API key"
+              value={perplexityInput}
+              onChange={(e) => setPerplexityInput(e.target.value)}
+              placeholder="paste your Perplexity API key"
               className="mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-mono"
             />
             <p className="mt-1 text-xs text-slate-500">
-              Sent as the <code className="rounded bg-slate-200 px-1">X-Subscription-Token</code> header to{' '}
-              <code className="rounded bg-slate-200 px-1">api.search.brave.com/res/v1/web/search</code>.
-            </p>
-          </div>
-          <div>
-            <label htmlFor="anthropic-key" className="block text-xs font-medium text-slate-700">
-              ANTHROPIC_API_KEY{' '}
-              {settings?.anthropic_api_key_is_custom ? (
-                <span className="ml-1 text-indigo-700">(custom)</span>
-              ) : (
-                <span className="ml-1 text-slate-500">(default)</span>
-              )}
-            </label>
-            <input
-              id="anthropic-key"
-              type="text"
-              autoComplete="off"
-              spellCheck={false}
-              value={anthropicInput}
-              onChange={(e) => setAnthropicInput(e.target.value)}
-              placeholder="paste your Anthropic API key"
-              className="mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-mono"
-            />
-            <p className="mt-1 text-xs text-slate-500">
-              Used to call <code className="rounded bg-slate-200 px-1">{settings?.info_signal_model ?? 'claude-haiku-4-5-20251001'}</code>{' '}
-              with a forced tool call to return <code className="rounded bg-slate-200 px-1">{'{notify, reason, summary}'}</code>.
+              Sent as <code className="rounded bg-slate-200 px-1">Authorization: Bearer …</code> to{' '}
+              <code className="rounded bg-slate-200 px-1">api.perplexity.ai/v1/agent</code> with preset{' '}
+              <code className="rounded bg-slate-200 px-1">{settings?.info_signal_perplexity_preset ?? 'pro-search'}</code>{' '}
+              and a JSON Schema response_format that returns{' '}
+              <code className="rounded bg-slate-200 px-1">{'{notify, reason, summary}'}</code>.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -139,7 +111,7 @@ export function InfoSignalApiKeysCard() {
             </Button>
             {hasOverride && (
               <Button type="button" variant="ghost" onClick={handleReset} disabled={saving}>
-                Reset to defaults
+                Clear
               </Button>
             )}
           </div>

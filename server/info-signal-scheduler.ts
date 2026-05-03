@@ -5,8 +5,7 @@ import {
   type InfoSignal,
   type InfoSignalFrequency,
 } from './db.ts';
-import { braveSearch } from './brave.ts';
-import { evaluateNotify } from './anthropic.ts';
+import { evaluateInfoSignal } from './perplexity.ts';
 import { sendTelegram } from './telegram.ts';
 
 const TICK_MS = 60_000;
@@ -42,8 +41,8 @@ export async function runInfoSignal(
   const startedAt = Math.floor(Date.now() / 1000);
   const startMs = Date.now();
 
-  const search = await braveSearch(signal.search_query);
-  if (!search.ok) {
+  const evalResult = await evaluateInfoSignal(signal.search_query, signal.notify_condition);
+  if (!evalResult.ok) {
     const completed = Math.floor(Date.now() / 1000);
     const durationMs = Date.now() - startMs;
     const info = db
@@ -52,34 +51,7 @@ export async function runInfoSignal(
           (signal_id, started_at, completed_at, duration_ms, status, error, search_results, telegram_sent, triggered_by)
          VALUES (?, ?, ?, ?, 'error', ?, NULL, 0, ?)`
       )
-      .run(signal.id, startedAt, completed, durationMs, `Brave search failed: ${search.error}`, triggeredBy);
-    db.prepare('UPDATE info_signals SET last_checked_at = ? WHERE id = ?').run(completed, signal.id);
-    return { run_id: Number(info.lastInsertRowid) };
-  }
-
-  const evalResult = await evaluateNotify(
-    signal.search_query,
-    signal.notify_condition,
-    search.results
-  );
-  if (!evalResult.ok) {
-    const completed = Math.floor(Date.now() / 1000);
-    const durationMs = Date.now() - startMs;
-    const info = db
-      .prepare(
-        `INSERT INTO info_signal_runs
-          (signal_id, started_at, completed_at, duration_ms, status, error, search_results, telegram_sent, triggered_by)
-         VALUES (?, ?, ?, ?, 'error', ?, ?, 0, ?)`
-      )
-      .run(
-        signal.id,
-        startedAt,
-        completed,
-        durationMs,
-        `Model evaluation failed: ${evalResult.error}`,
-        JSON.stringify(search.results),
-        triggeredBy
-      );
+      .run(signal.id, startedAt, completed, durationMs, `Perplexity evaluation failed: ${evalResult.error}`, triggeredBy);
     db.prepare('UPDATE info_signals SET last_checked_at = ? WHERE id = ?').run(completed, signal.id);
     return { run_id: Number(info.lastInsertRowid) };
   }
@@ -115,7 +87,7 @@ export async function runInfoSignal(
       startedAt,
       completed,
       durationMs,
-      JSON.stringify(search.results),
+      JSON.stringify(evalResult.search_results),
       decision.notify ? 1 : 0,
       decision.reason,
       decision.summary,

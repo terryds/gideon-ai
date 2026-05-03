@@ -14,7 +14,7 @@ Everything runs on your own machine. SQLite for storage, Bun + React for the app
                     │  • Reddit tracker  │── reddit.com (via proxy)
                     │  • Twitter tracker │── twitter-cli
                     │  • Exa people      │── Exa API
-                    │  • Info signal     │── Brave Search + Claude Haiku
+                    │  • Info signal     │── Perplexity (pro-search)
                     └────────────────────┘
 ```
 
@@ -43,7 +43,7 @@ Think of Gideon as a **lightweight, opinionated alternative to [OpenClaw](https:
   - [3. Reddit Tracker](#3-reddit-tracker) (proxy required)
   - [4. Twitter Tracker](#4-twitter-tracker) (twitter-cli required)
   - [5. Exa People Search](#5-exa-people-search)
-  - [6. Information Signal](#6-information-signal) (Brave + Claude Haiku)
+  - [6. Information Signal](#6-information-signal) (Perplexity)
 - [Security notes](#security-notes)
 - [License](#license)
 
@@ -204,24 +204,23 @@ Exa charges per request; check your dashboard for usage.
 
 ## 6. Information Signal
 
-Schedule a recurring web search and have a Claude model decide whether the results are worth notifying you about, based on a natural-language condition you write.
+Schedule a recurring research query and have Perplexity decide whether the results are worth notifying you about, based on a natural-language condition you write.
 
-**Setup:** Two API keys.
+**Setup:** One API key.
 
-1. **Brave Search API key** — sign up at <https://brave.com/search/api/>. Free tier: 1 query/sec, 2,000/month.
-2. **Anthropic API key** — get one at <https://console.anthropic.com>. Default model is `claude-haiku-4-5-20251001` (cheap and fast).
+1. **Perplexity API key** — get one at <https://www.perplexity.ai/settings/api>. Uses the `pro-search` preset, which both searches the web and reasons over the results in a single call.
 
-Configure both in **Settings → Information Signal API keys**.
+Configure it in **Settings → Information Signal API key**.
 
 **Usage:**
 1. Go to **Information Signal**.
 2. Create a signal with:
-   - **Search query** — what to ask Brave (e.g. `latest news on Federal Reserve interest rate decision`)
+   - **Search query** — the topic to research (e.g. `latest news on Federal Reserve interest rate decision`)
    - **Notify condition** — natural-language criterion the model evaluates (e.g. `notify me only if the Fed announced a rate change or hinted at one in the next FOMC`)
    - **Frequency** — `30m`, `1h`, `6h`, `12h`, `1d`, or `1w`
-3. Each tick: Gideon hits Brave with your query, passes the results + your condition to Claude Haiku, and only sends a Telegram message if the model decides the condition is met.
+3. Each tick: Gideon calls the Perplexity Agent API (`pro-search`) with a JSON Schema `response_format` that returns `{notify, reason, summary}`. A Telegram message is sent only if `notify` is true.
 
-**Run history:** Information Signal → Runs. Each run shows the search results, the model's decision (yes/no), its reasoning, and whether a Telegram message was sent.
+**Run history:** Information Signal → Runs. Each run shows the cited sources, the model's decision (yes/no), its reasoning, and whether a Telegram message was sent.
 
 ---
 
@@ -229,7 +228,7 @@ Configure both in **Settings → Information Signal API keys**.
 
 - **Single-user only.** There is no user model — the linked Telegram chat is the operator. Don't deploy this for a team or share the bot.
 - The Telegram → Claude Code relay runs `claude --permission-mode bypassPermissions`. **Treat your linked Telegram chat as having root on the host.** Don't share the chat. Use a private bot.
-- API keys (Anthropic, Brave, Exa, Twitter cookies, proxy creds) are stored **plaintext** in `data/dashboard.db`. Don't commit `data/` and don't back it up to anywhere untrusted.
+- API keys (Perplexity, Exa, Twitter cookies, proxy creds) are stored **plaintext** in `data/dashboard.db`. Don't commit `data/` and don't back it up to anywhere untrusted.
 - There is **no built-in authentication** on the dashboard HTTP server. Bind it to localhost, or put it behind a reverse proxy with auth (Tailscale/Cloudflare Access/HTTP basic auth/etc.).
 - The Reddit tracker stores your proxy URL (with embedded credentials) in plaintext in the DB — same caveats as above.
 

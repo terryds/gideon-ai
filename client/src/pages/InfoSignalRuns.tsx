@@ -148,7 +148,7 @@ function RunDetail({ run }: { run: InfoSignalRunWithMeta }) {
 
       <div className="rounded-md border border-slate-200 bg-white p-3 text-sm">
         <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-          Brave search results {run.search_results ? `(${run.search_results.length})` : ''}
+          Perplexity sources {run.search_results ? `(${run.search_results.length})` : ''}
         </p>
         {!run.search_results || run.search_results.length === 0 ? (
           <p className="mt-1 text-slate-500">none</p>
